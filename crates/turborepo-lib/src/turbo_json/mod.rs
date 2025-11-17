@@ -33,8 +33,8 @@ pub use future_flags::FutureFlags;
 pub use loader::{TurboJsonLoader, TurboJsonReader};
 pub use processed::ProcessedTaskDefinition;
 pub use raw::{
-    RawKeyValue, RawObservabilityOtel, RawPackageTurboJson, RawRemoteCacheOptions,
-    RawRootTurboJson, RawTaskDefinition, RawTurboJson,
+    RawExperimentalObservability, RawKeyValue, RawObservabilityOtel, RawPackageTurboJson,
+    RawRemoteCacheOptions, RawRootTurboJson, RawTaskDefinition, RawTurboJson,
 };
 
 use crate::boundaries::BoundariesConfig;
@@ -1174,6 +1174,6 @@ mod tests {
         let deps = boundaries.dependencies.as_ref().unwrap();
         assert!(deps.allow.is_some());
         assert!(deps.deny.is_none()); // This should be None, not serialized as
-                                      // null
+        // null
     }
 }
