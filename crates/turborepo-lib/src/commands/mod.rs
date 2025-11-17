@@ -10,7 +10,7 @@ use crate::{
     cli,
     config::{
         resolve_turbo_config_path, ConfigurationOptions, Error as ConfigError,
-        TurborepoConfigBuilder,
+        ExperimentalObservabilityOptions, TurborepoConfigBuilder,
     },
     opts::Opts,
     Args,
@@ -129,7 +129,11 @@ impl CommandBase {
                 args.execution_args()
                     .and_then(|args| args.concurrency.clone()),
             )
-            .with_experimental_otel(args.experimental_otel_args.to_config())
+            .with_experimental_observability(
+                args.experimental_otel_args
+                    .to_config()
+                    .map(|otel| ExperimentalObservabilityOptions { otel: Some(otel) }),
+            )
             .build()
     }
 

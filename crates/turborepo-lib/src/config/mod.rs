@@ -14,7 +14,7 @@ use file::{AuthFile, ConfigFile};
 use merge::Merge;
 use miette::{Diagnostic, NamedSource, SourceSpan};
 use override_env::OverrideEnvVars;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use struct_iterable::Iterable;
 use thiserror::Error;
 use tracing::debug;
@@ -36,6 +36,12 @@ pub const CONFIG_FILE_JSONC: &str = "turbo.jsonc";
 pub use experimental_otel::{
     ExperimentalOtelMetricsOptions, ExperimentalOtelOptions, ExperimentalOtelProtocol,
 };
+
+#[derive(Deserialize, Serialize, Default, Debug, Clone, PartialEq, Eq, Merge)]
+#[serde(rename_all = "camelCase")]
+pub struct ExperimentalObservabilityOptions {
+    pub otel: Option<ExperimentalOtelOptions>,
+}
 
 #[derive(Debug, Error, Diagnostic)]
 #[error("Environment variables should not be prefixed with \"{env_pipeline_delimiter}\"")]
@@ -331,8 +337,8 @@ pub struct ConfigurationOptions {
     pub(crate) sso_login_callback_port: Option<u16>,
     #[serde(skip)]
     future_flags: Option<FutureFlags>,
-    #[serde(rename = "experimentalOtel")]
-    pub(crate) experimental_otel: Option<ExperimentalOtelOptions>,
+    #[serde(rename = "experimentalObservability")]
+    pub(crate) experimental_observability: Option<ExperimentalObservabilityOptions>,
 }
 
 #[derive(Default)]
@@ -497,8 +503,8 @@ impl ConfigurationOptions {
         self.future_flags.unwrap_or_default()
     }
 
-    pub fn experimental_otel(&self) -> Option<&ExperimentalOtelOptions> {
-        self.experimental_otel.as_ref()
+    pub fn experimental_observability(&self) -> Option<&ExperimentalObservabilityOptions> {
+        self.experimental_observability.as_ref()
     }
 }
 
