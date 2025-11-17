@@ -13,7 +13,7 @@ use crate::{
         Command, ContinueMode, DryRunMode, EnvMode, ExecutionArgs, LogOrder, LogPrefix,
         OutputLogsMode, RunArgs,
     },
-    config::{ConfigurationOptions, CONFIG_FILE},
+    config::{ConfigurationOptions, ExperimentalOtelOptions, CONFIG_FILE},
     turbo_json::{FutureFlags, UIMode},
     Args,
 };
@@ -78,6 +78,7 @@ pub struct Opts {
     pub scope_opts: ScopeOpts,
     pub tui_opts: TuiOpts,
     pub future_flags: FutureFlags,
+    pub experimental_otel: Option<ExperimentalOtelOptions>,
 }
 
 impl Opts {
@@ -182,6 +183,7 @@ impl Opts {
         let repo_opts = RepoOpts::from(inputs);
         let tui_opts = TuiOpts::from(inputs);
         let future_flags = config.future_flags();
+        let experimental_otel = config.experimental_otel().cloned();
 
         Ok(Self {
             repo_opts,
@@ -192,6 +194,7 @@ impl Opts {
             api_client_opts,
             tui_opts,
             future_flags,
+            experimental_otel,
         })
     }
 }
@@ -751,6 +754,7 @@ mod test {
             runcache_opts,
             tui_opts,
             future_flags: Default::default(),
+            experimental_otel: None,
         };
         let synthesized = opts.synthesize_command();
         assert_eq!(synthesized, expected);

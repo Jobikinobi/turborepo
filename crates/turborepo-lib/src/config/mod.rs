@@ -1,4 +1,5 @@
 mod env;
+mod experimental_otel;
 mod file;
 mod override_env;
 mod turbo_json;
@@ -31,6 +32,10 @@ use crate::{
 
 pub const CONFIG_FILE: &str = "turbo.json";
 pub const CONFIG_FILE_JSONC: &str = "turbo.jsonc";
+
+pub use experimental_otel::{
+    ExperimentalOtelMetricsOptions, ExperimentalOtelOptions, ExperimentalOtelProtocol,
+};
 
 #[derive(Debug, Error, Diagnostic)]
 #[error("Environment variables should not be prefixed with \"{env_pipeline_delimiter}\"")]
@@ -252,6 +257,8 @@ pub enum Error {
     InvalidTuiScrollbackLength(#[source] std::num::ParseIntError),
     #[error("TURBO_SSO_LOGIN_CALLBACK_PORT: Invalid value. Use a number for the callback port.")]
     InvalidSsoLoginCallbackPort(#[source] std::num::ParseIntError),
+    #[error("Invalid experimentalOtel configuration: {message}")]
+    InvalidExperimentalOtelConfig { message: String },
 }
 
 const DEFAULT_API_URL: &str = "https://vercel.com/api";
@@ -324,6 +331,8 @@ pub struct ConfigurationOptions {
     pub(crate) sso_login_callback_port: Option<u16>,
     #[serde(skip)]
     future_flags: Option<FutureFlags>,
+    #[serde(rename = "experimentalOtel")]
+    pub(crate) experimental_otel: Option<ExperimentalOtelOptions>,
 }
 
 #[derive(Default)]
@@ -486,6 +495,10 @@ impl ConfigurationOptions {
 
     pub fn future_flags(&self) -> FutureFlags {
         self.future_flags.unwrap_or_default()
+    }
+
+    pub fn experimental_otel(&self) -> Option<&ExperimentalOtelOptions> {
+        self.experimental_otel.as_ref()
     }
 }
 

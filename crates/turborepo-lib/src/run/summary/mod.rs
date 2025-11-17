@@ -29,6 +29,7 @@ use turborepo_scm::SCM;
 use turborepo_task_id::TaskId;
 use turborepo_ui::{color, cprintln, cwriteln, ColorConfig, BOLD, BOLD_CYAN, GREY};
 
+pub(crate) use self::task::{CacheStatus, TaskSummary};
 use self::{
     execution::TaskState, task::SinglePackageTaskSummary, task_factory::TaskSummaryFactory,
 };
@@ -40,7 +41,6 @@ use crate::{
     run::summary::{
         execution::{ExecutionSummary, ExecutionTracker},
         scm::SCMState,
-        task::TaskSummary,
     },
     task_hash::TaskHashTracker,
 };
@@ -98,6 +98,8 @@ pub struct RunSummary<'a> {
     should_save: bool,
     #[serde(skip)]
     run_type: RunType,
+    #[serde(skip)]
+    observability_handle: Option<crate::observability::Handle>,
 }
 
 /// We use this to track the run, so it's constructed before the run.
@@ -109,6 +111,7 @@ pub struct RunTracker {
     execution_tracker: ExecutionTracker,
     user: Option<String>,
     synthesized_command: String,
+    observability_handle: Option<crate::observability::Handle>,
 }
 
 impl RunTracker {
@@ -121,6 +124,7 @@ impl RunTracker {
         version: &'static str,
         user: Option<String>,
         scm: &SCM,
+        observability_handle: Option<crate::observability::Handle>,
     ) -> Self {
         let scm = SCMState::get(env_at_execution_start, scm, repo_root);
 
@@ -131,6 +135,7 @@ impl RunTracker {
             execution_tracker: ExecutionTracker::new(),
             user,
             synthesized_command,
+            observability_handle,
         }
     }
 
@@ -197,6 +202,7 @@ impl RunTracker {
             repo_root,
             should_save,
             run_type,
+            observability_handle: self.observability_handle,
         })
     }
 
@@ -311,6 +317,26 @@ impl<'a> From<&'a RunSummary<'a>> for SinglePackageRunSummary<'a> {
 }
 
 impl<'a> RunSummary<'a> {
+    pub(crate) fn id(&self) -> &Ksuid {
+        &self.id
+    }
+
+    pub(crate) fn turbo_version(&self) -> &'static str {
+        self.turbo_version
+    }
+
+    pub(crate) fn execution_summary(&self) -> Option<&ExecutionSummary<'a>> {
+        self.execution.as_ref()
+    }
+
+    pub(crate) fn tasks(&self) -> &[TaskSummary] {
+        &self.tasks
+    }
+
+    pub(crate) fn scm_state(&self) -> &SCMState {
+        &self.scm
+    }
+
     #[tracing::instrument(skip(self, pkg_dep_graph, ui))]
     async fn finish(
         mut self,
@@ -322,6 +348,11 @@ impl<'a> RunSummary<'a> {
     ) -> Result<(), Error> {
         if matches!(self.run_type, RunType::DryJson | RunType::DryText) {
             return self.close_dry_run(pkg_dep_graph, ui);
+        }
+
+        if let Some(handle) = self.observability_handle.take() {
+            handle.record(&self);
+            handle.shutdown();
         }
 
         if self.should_save {

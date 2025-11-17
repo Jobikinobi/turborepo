@@ -165,6 +165,18 @@ impl<'a> ExecutionSummary<'a> {
     fn successful(&self) -> usize {
         self.success + self.cached
     }
+
+    pub(crate) fn attempted(&self) -> usize {
+        self.attempted
+    }
+
+    pub(crate) fn failed(&self) -> usize {
+        self.failed
+    }
+
+    pub(crate) fn cached(&self) -> usize {
+        self.cached
+    }
 }
 
 /// The final states of all task executions

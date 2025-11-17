@@ -129,6 +129,7 @@ impl CommandBase {
                 args.execution_args()
                     .and_then(|args| args.concurrency.clone()),
             )
+            .with_experimental_otel(args.experimental_otel_args.to_config())
             .build()
     }
 
