@@ -5,7 +5,7 @@ use serde::Serialize;
 use tokio::sync::mpsc;
 use turbopath::{AbsoluteSystemPathBuf, AnchoredSystemPath};
 use turborepo_task_id::TaskId;
-use turborepo_ui::{color, cprintln, ColorConfig, BOLD, BOLD_GREEN, BOLD_RED, MAGENTA, YELLOW};
+use turborepo_ui::{BOLD, BOLD_GREEN, BOLD_RED, ColorConfig, MAGENTA, YELLOW, color, cprintln};
 
 use super::TurboDuration;
 use crate::run::summary::task::TaskSummary;
@@ -39,13 +39,10 @@ pub struct ExecutionSummary<'a> {
     cached: usize,
     // number of tasks that started
     attempted: usize,
-    // Used in observability/otel.rs to calculate duration_ms
     pub(crate) start_time: i64,
-    // Used in observability/otel.rs to calculate duration_ms
     pub(crate) end_time: i64,
     #[serde(skip)]
     duration: TurboDuration,
-    // Used in observability/otel.rs to populate RunMetricsPayload
     pub(crate) exit_code: i32,
 }
 
