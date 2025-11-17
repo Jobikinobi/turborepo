@@ -1859,10 +1859,7 @@ mod test {
     use pretty_assertions::assert_eq;
 
     use super::{ExperimentalOtelCliArgs, ExperimentalOtelProtocol};
-    use crate::{
-        cli::{ContinueMode, ExecutionArgs, LinkTarget, RunArgs},
-        config::ExperimentalOtelOptions,
-    };
+    use crate::cli::{ContinueMode, ExecutionArgs, LinkTarget, RunArgs};
 
     struct CommandTestCase {
         command: &'static str,
@@ -3511,8 +3508,10 @@ mod test {
 
     #[test]
     fn test_experimental_otel_cli_args_enabled() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.enabled = Some(true);
+        let args = ExperimentalOtelCliArgs {
+            enabled: Some(true),
+            ..Default::default()
+        };
         let result = args.to_config();
         assert!(result.is_some());
         assert_eq!(result.unwrap().enabled, Some(true));
@@ -3520,8 +3519,10 @@ mod test {
 
     #[test]
     fn test_experimental_otel_cli_args_protocol() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.protocol = Some(ExperimentalOtelProtocol::Grpc);
+        let args = ExperimentalOtelCliArgs {
+            protocol: Some(ExperimentalOtelProtocol::Grpc),
+            ..Default::default()
+        };
         let result = args.to_config();
         assert!(result.is_some());
         assert_eq!(
@@ -3532,8 +3533,10 @@ mod test {
 
     #[test]
     fn test_experimental_otel_cli_args_protocol_http_protobuf() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.protocol = Some(ExperimentalOtelProtocol::HttpProtobuf);
+        let args = ExperimentalOtelCliArgs {
+            protocol: Some(ExperimentalOtelProtocol::HttpProtobuf),
+            ..Default::default()
+        };
         let result = args.to_config();
         assert!(result.is_some());
         assert_eq!(
@@ -3544,8 +3547,10 @@ mod test {
 
     #[test]
     fn test_experimental_otel_cli_args_endpoint() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.endpoint = Some("https://example.com/otel".to_string());
+        let args = ExperimentalOtelCliArgs {
+            endpoint: Some("https://example.com/otel".to_string()),
+            ..Default::default()
+        };
         let result = args.to_config();
         assert!(result.is_some());
         assert_eq!(
@@ -3556,8 +3561,10 @@ mod test {
 
     #[test]
     fn test_experimental_otel_cli_args_timeout_ms() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.timeout_ms = Some(5000);
+        let args = ExperimentalOtelCliArgs {
+            timeout_ms: Some(5000),
+            ..Default::default()
+        };
         let result = args.to_config();
         assert!(result.is_some());
         assert_eq!(result.unwrap().timeout_ms, Some(5000));
@@ -3565,8 +3572,10 @@ mod test {
 
     #[test]
     fn test_experimental_otel_cli_args_headers_single() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.headers = vec![("key1".to_string(), "value1".to_string())];
+        let args = ExperimentalOtelCliArgs {
+            headers: vec![("key1".to_string(), "value1".to_string())],
+            ..Default::default()
+        };
         let result = args.to_config();
         assert!(result.is_some());
         let headers = result.unwrap().headers.unwrap();
@@ -3575,11 +3584,13 @@ mod test {
 
     #[test]
     fn test_experimental_otel_cli_args_headers_multiple() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.headers = vec![
-            ("key1".to_string(), "value1".to_string()),
-            ("key2".to_string(), "value2".to_string()),
-        ];
+        let args = ExperimentalOtelCliArgs {
+            headers: vec![
+                ("key1".to_string(), "value1".to_string()),
+                ("key2".to_string(), "value2".to_string()),
+            ],
+            ..Default::default()
+        };
         let result = args.to_config();
         assert!(result.is_some());
         let headers = result.unwrap().headers.unwrap();
@@ -3589,16 +3600,20 @@ mod test {
 
     #[test]
     fn test_experimental_otel_cli_args_headers_empty() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.headers = vec![];
+        let args = ExperimentalOtelCliArgs {
+            headers: vec![],
+            ..Default::default()
+        };
         let result = args.to_config();
         assert_eq!(result, None);
     }
 
     #[test]
     fn test_experimental_otel_cli_args_resource_single() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.resource_attributes = vec![("service.name".to_string(), "my-service".to_string())];
+        let args = ExperimentalOtelCliArgs {
+            resource_attributes: vec![("service.name".to_string(), "my-service".to_string())],
+            ..Default::default()
+        };
         let result = args.to_config();
         assert!(result.is_some());
         let resource = result.unwrap().resource.unwrap();
@@ -3610,11 +3625,13 @@ mod test {
 
     #[test]
     fn test_experimental_otel_cli_args_resource_multiple() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.resource_attributes = vec![
-            ("service.name".to_string(), "my-service".to_string()),
-            ("env".to_string(), "production".to_string()),
-        ];
+        let args = ExperimentalOtelCliArgs {
+            resource_attributes: vec![
+                ("service.name".to_string(), "my-service".to_string()),
+                ("env".to_string(), "production".to_string()),
+            ],
+            ..Default::default()
+        };
         let result = args.to_config();
         assert!(result.is_some());
         let resource = result.unwrap().resource.unwrap();
@@ -3627,8 +3644,10 @@ mod test {
 
     #[test]
     fn test_experimental_otel_cli_args_metrics_run_summary() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.metrics_run_summary = Some(true);
+        let args = ExperimentalOtelCliArgs {
+            metrics_run_summary: Some(true),
+            ..Default::default()
+        };
         let result = args.to_config();
         assert!(result.is_some());
         let metrics = result.unwrap().metrics.unwrap();
@@ -3637,8 +3656,10 @@ mod test {
 
     #[test]
     fn test_experimental_otel_cli_args_metrics_task_details() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.metrics_task_details = Some(true);
+        let args = ExperimentalOtelCliArgs {
+            metrics_task_details: Some(true),
+            ..Default::default()
+        };
         let result = args.to_config();
         assert!(result.is_some());
         let metrics = result.unwrap().metrics.unwrap();
@@ -3647,9 +3668,11 @@ mod test {
 
     #[test]
     fn test_experimental_otel_cli_args_metrics_both() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.metrics_run_summary = Some(true);
-        args.metrics_task_details = Some(false);
+        let args = ExperimentalOtelCliArgs {
+            metrics_run_summary: Some(true),
+            metrics_task_details: Some(false),
+            ..Default::default()
+        };
         let result = args.to_config();
         assert!(result.is_some());
         let metrics = result.unwrap().metrics.unwrap();
@@ -3659,16 +3682,16 @@ mod test {
 
     #[test]
     fn test_experimental_otel_cli_args_combined() {
-        let mut args = ExperimentalOtelCliArgs::default();
-        args.enabled = Some(true);
-        args.protocol = Some(ExperimentalOtelProtocol::Grpc);
-        args.endpoint = Some("https://example.com/otel".to_string());
-        args.timeout_ms = Some(15000);
-        args.headers = vec![("auth".to_string(), "token123".to_string())];
-        args.resource_attributes = vec![("service.name".to_string(), "test".to_string())];
-        args.metrics_run_summary = Some(true);
-        args.metrics_task_details = Some(false);
-
+        let args = ExperimentalOtelCliArgs {
+            enabled: Some(true),
+            protocol: Some(ExperimentalOtelProtocol::Grpc),
+            endpoint: Some("https://example.com/otel".to_string()),
+            timeout_ms: Some(15000),
+            headers: vec![("auth".to_string(), "token123".to_string())],
+            resource_attributes: vec![("service.name".to_string(), "test".to_string())],
+            metrics_run_summary: Some(true),
+            metrics_task_details: Some(false),
+        };
         let result = args.to_config();
         assert!(result.is_some());
         let opts = result.unwrap();
