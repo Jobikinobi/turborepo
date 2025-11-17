@@ -29,7 +29,10 @@ use turborepo_scm::SCM;
 use turborepo_task_id::TaskId;
 use turborepo_ui::{color, cprintln, cwriteln, ColorConfig, BOLD, BOLD_CYAN, GREY};
 
-pub(crate) use self::task::{CacheStatus, TaskSummary};
+#[allow(unused_imports)]
+pub(crate) use self::task::CacheStatus;
+// Re-exported for use in observability/otel.rs
+pub(crate) use self::task::TaskSummary;
 use self::{
     execution::TaskState, task::SinglePackageTaskSummary, task_factory::TaskSummaryFactory,
 };
@@ -317,22 +320,27 @@ impl<'a> From<&'a RunSummary<'a>> for SinglePackageRunSummary<'a> {
 }
 
 impl<'a> RunSummary<'a> {
+    // Used in observability/otel.rs to populate RunMetricsPayload.run_id
     pub(crate) fn id(&self) -> &Ksuid {
         &self.id
     }
 
+    // Used in observability/otel.rs to populate RunMetricsPayload.turbo_version
     pub(crate) fn turbo_version(&self) -> &'static str {
         self.turbo_version
     }
 
+    // Used in observability/otel.rs to access execution summary for metrics
     pub(crate) fn execution_summary(&self) -> Option<&ExecutionSummary<'a>> {
         self.execution.as_ref()
     }
 
+    // Used in observability/otel.rs to iterate over tasks for TaskMetricsPayload
     pub(crate) fn tasks(&self) -> &[TaskSummary] {
         &self.tasks
     }
 
+    // Used in observability/otel.rs to populate RunMetricsPayload SCM fields
     pub(crate) fn scm_state(&self) -> &SCMState {
         &self.scm
     }
