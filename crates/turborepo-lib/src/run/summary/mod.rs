@@ -27,7 +27,7 @@ use turborepo_env::EnvironmentVariableMap;
 use turborepo_repository::package_graph::{PackageGraph, PackageName};
 use turborepo_scm::SCM;
 use turborepo_task_id::TaskId;
-use turborepo_ui::{color, cprintln, cwriteln, ColorConfig, BOLD, BOLD_CYAN, GREY};
+use turborepo_ui::{BOLD, BOLD_CYAN, ColorConfig, GREY, color, cprintln, cwriteln};
 
 /// Re-exported for use in observability/otel.rs
 pub(crate) use self::task::{CacheStatus, TaskSummary};
@@ -352,13 +352,18 @@ impl<'a> RunSummary<'a> {
         ui: ColorConfig,
         is_watch: bool,
     ) -> Result<(), Error> {
-        if matches!(self.run_type, RunType::DryJson | RunType::DryText) {
-            return self.close_dry_run(pkg_dep_graph, ui);
+        // Handle observability shutdown before the dry run check to ensure graceful
+        // cleanup even when metrics are not being emitted.
+        if let Some(handle) = self.observability_handle.take() {
+            // Only record metrics for actual runs, not dry runs
+            if !matches!(self.run_type, RunType::DryJson | RunType::DryText) {
+                handle.record(&self);
+            }
+            handle.shutdown();
         }
 
-        if let Some(handle) = self.observability_handle.take() {
-            handle.record(&self);
-            handle.shutdown();
+        if matches!(self.run_type, RunType::DryJson | RunType::DryText) {
+            return self.close_dry_run(pkg_dep_graph, ui);
         }
 
         if self.should_save {
