@@ -213,7 +213,7 @@ devturbo run build --ui=tui --skip-infer 2&> ~/tmp/logs.txt
 
 ## Publishing `turbo` to the npm registry
 
-See [the publishing guide](./release.md).
+See [the publishing guide](./RELEASE.md).
 
 ## Contributing to examples
 
