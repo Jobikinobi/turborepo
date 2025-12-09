@@ -51,6 +51,7 @@ pub struct RawObservabilityOtel {
     pub timeout_ms: Option<Spanned<u64>>,
     pub resource: Option<Vec<RawKeyValue>>,
     pub metrics: Option<RawObservabilityOtelMetrics>,
+    pub use_remote_cache_token: Option<Spanned<bool>>,
 }
 
 #[derive(Serialize, Default, Debug, Clone, Iterable, Deserializable)]
