@@ -81,6 +81,10 @@ const TURBO_MAPPING: &[(&str, &str)] = [
         "turbo_experimental_otel_metrics_task_details",
         "experimental_otel_metrics_task_details",
     ),
+    (
+        "turbo_experimental_otel_use_remote_cache_token",
+        "experimental_otel_use_remote_cache_token",
+    ),
 ]
 .as_slice();
 
@@ -196,10 +200,10 @@ impl ResolvedConfigurationOptions for EnvVars {
             .map_err(Error::InvalidTuiScrollbackLength)?;
 
         // Process ui
-        let ui =
-            self.truthy_value("ui")
-                .flatten()
-                .map(|ui| if ui { UIMode::Tui } else { UIMode::Stream });
+        let ui = self
+            .truthy_value("ui")
+            .flatten()
+            .map(|ui| if ui { UIMode::Tui } else { UIMode::Stream });
 
         let allow_no_package_manager = self.truthy_value("allow_no_package_manager").flatten();
 
