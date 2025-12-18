@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use biome_deserialize_macros::Deserializable;
 use serde::Serialize;
@@ -47,9 +47,9 @@ pub struct RawObservabilityOtel {
     pub enabled: Option<Spanned<bool>>,
     pub protocol: Option<Spanned<UnescapedString>>,
     pub endpoint: Option<Spanned<UnescapedString>>,
-    pub headers: Option<Vec<RawKeyValue>>,
+    pub headers: Option<BTreeMap<UnescapedString, UnescapedString>>,
     pub timeout_ms: Option<Spanned<u64>>,
-    pub resource: Option<Vec<RawKeyValue>>,
+    pub resource: Option<BTreeMap<UnescapedString, UnescapedString>>,
     pub metrics: Option<RawObservabilityOtelMetrics>,
     pub use_remote_cache_token: Option<Spanned<bool>>,
 }
@@ -60,26 +60,11 @@ pub struct RawExperimentalObservability {
     pub otel: Option<RawObservabilityOtel>,
 }
 
-#[derive(Serialize, Debug, Clone, Iterable, Deserializable)]
-pub struct RawKeyValue {
-    pub key: Spanned<UnescapedString>,
-    pub value: Spanned<UnescapedString>,
-}
-
 #[derive(Serialize, Default, Debug, Clone, Iterable, Deserializable)]
 #[serde(rename_all = "camelCase")]
 pub struct RawObservabilityOtelMetrics {
     pub run_summary: Option<Spanned<bool>>,
     pub task_details: Option<Spanned<bool>>,
-}
-
-impl Default for RawKeyValue {
-    fn default() -> Self {
-        Self {
-            key: Spanned::new(UnescapedString::from(String::new())),
-            value: Spanned::new(UnescapedString::from(String::new())),
-        }
-    }
 }
 
 // Root turbo.json

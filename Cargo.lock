@@ -3887,7 +3887,6 @@ dependencies = [
  "thiserror 2.0.12",
  "tokio",
  "tonic 0.14.2",
- "tracing",
 ]
 
 [[package]]

@@ -33,8 +33,8 @@ pub use future_flags::FutureFlags;
 pub use loader::{TurboJsonLoader, TurboJsonReader};
 pub use processed::ProcessedTaskDefinition;
 pub use raw::{
-    RawExperimentalObservability, RawKeyValue, RawObservabilityOtel, RawPackageTurboJson,
-    RawRemoteCacheOptions, RawRootTurboJson, RawTaskDefinition, RawTurboJson,
+    RawExperimentalObservability, RawObservabilityOtel, RawPackageTurboJson, RawRemoteCacheOptions,
+    RawRootTurboJson, RawTaskDefinition, RawTurboJson,
 };
 
 use crate::boundaries::BoundariesConfig;
