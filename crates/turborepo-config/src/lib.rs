@@ -15,6 +15,7 @@
 #![allow(clippy::result_large_err)]
 
 mod env;
+mod experimental_otel;
 mod file;
 mod override_env;
 mod turbo_json;
@@ -28,7 +29,7 @@ use file::{AuthFile, ConfigFile};
 use merge::Merge;
 use miette::Diagnostic;
 use override_env::OverrideEnvVars;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use struct_iterable::Iterable;
 use thiserror::Error;
 use tracing::debug;
@@ -249,7 +250,7 @@ pub struct ConfigurationOptions {
     pub experimental_observability: Option<ExperimentalObservabilityOptions>,
 }
 
-pub use experimental_otel::{
+pub use crate::experimental_otel::{
     ExperimentalOtelMetricsOptions, ExperimentalOtelOptions, ExperimentalOtelProtocol,
 };
 

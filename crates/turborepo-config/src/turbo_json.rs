@@ -2,15 +2,14 @@ use std::{collections::BTreeMap, str::FromStr};
 
 use camino::Utf8PathBuf;
 use turbopath::{AbsoluteSystemPath, RelativeUnixPath};
-use turborepo_turbo_json::{RawRemoteCacheOptions, RawRootTurboJson, RawTurboJson};
+use turborepo_turbo_json::{
+    RawExperimentalObservability, RawObservabilityOtel, RawRemoteCacheOptions, RawRootTurboJson,
+    RawTurboJson,
+};
 
 use super::{
     ConfigurationOptions, Error, ExperimentalObservabilityOptions, ExperimentalOtelMetricsOptions,
     ExperimentalOtelOptions, ExperimentalOtelProtocol, ResolvedConfigurationOptions,
-};
-use crate::turbo_json::{
-    RawExperimentalObservability, RawObservabilityOtel, RawRemoteCacheOptions, RawRootTurboJson,
-    RawTurboJson,
 };
 
 pub struct TurboJsonReader<'a> {

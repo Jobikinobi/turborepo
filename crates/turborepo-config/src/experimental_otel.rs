@@ -4,7 +4,7 @@ use clap::ValueEnum;
 use merge::Merge;
 use serde::{Deserialize, Serialize};
 
-use super::Error;
+use crate::Error;
 
 #[derive(
     Copy,
@@ -188,7 +188,7 @@ fn get_non_empty<'a>(
 }
 
 fn parse_bool_flag(raw: &str, var: &str) -> Result<bool, Error> {
-    crate::config::env::truth_env_var(raw).ok_or_else(|| Error::InvalidExperimentalOtelConfig {
+    crate::env::truth_env_var(raw).ok_or_else(|| Error::InvalidExperimentalOtelConfig {
         message: format!("{var} should be either 1 or 0."),
     })
 }

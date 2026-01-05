@@ -32,7 +32,6 @@ mod boundaries;
 )]
 pub use turborepo_hash as hash;
 mod microfrontends;
-mod observability;
 mod opts;
 mod package_changes_watcher;
 mod panic_handler;

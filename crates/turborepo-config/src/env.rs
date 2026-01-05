@@ -14,10 +14,6 @@ use super::{
     ConfigurationOptions, Error, ExperimentalObservabilityOptions, ExperimentalOtelOptions,
     ResolvedConfigurationOptions,
 };
-use crate::{
-    cli::{EnvMode, LogOrder},
-    turbo_json::UIMode,
-};
 
 const TURBO_MAPPING: &[(&str, &str)] = [
     ("turbo_api", "api_url"),

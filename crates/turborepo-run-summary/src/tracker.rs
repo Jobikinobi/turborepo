@@ -23,6 +23,7 @@ use turborepo_ui::{color, cprintln, cwriteln, ColorConfig, BOLD, BOLD_CYAN, GREY
 
 use crate::{
     execution::{ExecutionSummary, ExecutionTracker, TaskState},
+    observability::Handle as ObservabilityHandle,
     task::{SinglePackageTaskSummary, TaskSummary},
     task_factory::TaskSummaryFactory,
     EngineInfo, GlobalHashSummary, HashTrackerInfo, RunOptsInfo, SCMState, TaskTracker,
@@ -82,7 +83,7 @@ pub struct RunSummary<'a> {
     #[serde(skip)]
     run_type: RunType,
     #[serde(skip)]
-    observability_handle: Option<crate::observability::Handle>,
+    observability_handle: Option<ObservabilityHandle>,
 }
 
 /// We use this to track the run, so it's constructed before the run.
@@ -94,7 +95,7 @@ pub struct RunTracker {
     execution_tracker: ExecutionTracker,
     user: Option<String>,
     synthesized_command: String,
-    observability_handle: Option<crate::observability::Handle>,
+    observability_handle: Option<ObservabilityHandle>,
 }
 
 impl RunTracker {
@@ -107,7 +108,7 @@ impl RunTracker {
         version: &'static str,
         user: Option<String>,
         scm: &SCM,
-        observability_handle: Option<crate::observability::Handle>,
+        observability_handle: Option<ObservabilityHandle>,
     ) -> Self {
         let scm = SCMState::get(env_at_execution_start, scm, repo_root);
 
@@ -190,7 +191,7 @@ impl RunTracker {
             repo_root,
             should_save,
             run_type,
-            observability_handle: self.observability_handle,
+            observability_handle: self.observability_handle.clone(),
         })
     }
 
