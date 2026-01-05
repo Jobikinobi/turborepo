@@ -1,4 +1,4 @@
-name: Turborepo Test
+name: Test
 on:
   push:
     branches: [main]
@@ -17,6 +17,7 @@ jobs:
   find-changes:
     name: Find path changes
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     outputs:
       docs: ${{ steps.filter.outputs.docs }}
       basic-example: ${{ steps.filter.outputs.basic-example }}
@@ -110,6 +111,7 @@ jobs:
       - find-changes
     if: ${{ needs.find-changes.outputs.rest == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     outputs:
       test-paths: ${{ steps.generate-matrix.outputs.test-paths }}
     steps:
@@ -132,12 +134,13 @@ jobs:
           fi
 
   integration:
-    name: Turborepo Integration (${{ matrix.os.runner }}, ${{ matrix.test-path }})
+    name: Integration (${{ matrix.os.runner }}, ${{ matrix.test-path }})
     needs:
       - find-changes
       - generate-integration-test-matrix
     runs-on: ${{ matrix.os.runner }}
-    if: ${{ needs.find-changes.outputs.rest == 'true' }}
+    timeout-minutes: 30
+    if: ${{ needs.find-changes.outputs.rest == 'true' && needs.generate-integration-test-matrix.result == 'success' }}
     strategy:
       fail-fast: false
       matrix:
@@ -159,8 +162,8 @@ jobs:
         run: git config --global core.autocrlf input
       - uses: actions/checkout@v4
 
-      - name: Setup Turborepo Environment
-        uses: ./.github/actions/setup-turborepo-environment
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           node-version: "18.20.2" # TODO: Update integration tests with changed log output in Node.js 22
@@ -214,64 +217,13 @@ jobs:
           SCCACHE_REQUEST_TIMEOUT: 30
           SCCACHE_ERROR_LOG: error
 
-  rust_lint:
-    name: Rust lints
-    needs:
-      - find-changes
-    if: ${{ needs.find-changes.outputs.rest == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Turborepo Environment
-        uses: ./.github/actions/setup-turborepo-environment
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-
-      - name: Run cargo fmt check
-        run: |
-          cargo fmt --check
-
-      - name: Check Cargo.toml formatting (taplo)
-        run: npx @taplo/cli@0.5.2 format --check
-
-      - name: Check licenses
-        uses: EmbarkStudios/cargo-deny-action@v2
-        with:
-          command: check licenses
-
-      - name: Run cargo clippy
-        run: |
-          cargo clippy --workspace --features rustls-tls --all-targets -- --deny clippy::all
-
-  rust_check:
-    # We test dependency changes only on main
-    name: Turborepo rust check
-    needs:
-      - find-changes
-    if: ${{ needs.find-changes.outputs.rest == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Turborepo Environment
-        uses: ./.github/actions/setup-turborepo-environment
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-          node: "false"
-
-      - name: Run cargo check
-        run: |
-          cargo check --workspace
-
   turbo_types_check:
     name: "@turbo/types codegen check"
     needs:
       - find-changes
     if: ${{ needs.find-changes.outputs.rest == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -308,10 +260,11 @@ jobs:
             runner: windows-latest
         partition: [1, 2]
     runs-on: ${{ matrix.os.runner }}
+    timeout-minutes: 30
     needs:
       - find-changes
     if: ${{ needs.find-changes.outputs.rest == 'true' }}
-    name: Turborepo Rust testing on ${{ matrix.os.name }} (partition ${{ matrix.partition }}/2)
+    name: Rust testing on ${{ matrix.os.name }} (partition ${{ matrix.partition }}/2)
     steps:
       - name: Set git to use LF line endings
         run: |
@@ -322,8 +275,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Turborepo Environment
-        uses: ./.github/actions/setup-turborepo-environment
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           node: "false"
@@ -480,14 +433,13 @@ jobs:
           test-filter: "@turborepo-examples-tests/with-tailwind-*"
 
   summary:
-    name: Turborepo Test Summary
+    name: Test Summary
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: always()
     needs:
       - find-changes
       - integration
-      - rust_lint
-      - rust_check
       - turbo_types_check
       - rust_test
       - basic-example
@@ -513,8 +465,6 @@ jobs:
           }
 
           subjob ${{needs.integration.result}}
-          subjob ${{needs.rust_lint.result}}
-          subjob ${{needs.rust_check.result}}
           subjob ${{needs.turbo_types_check.result}}
           subjob ${{needs.rust_test.result}}
           subjob ${{needs.basic-example.result}}

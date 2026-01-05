@@ -2,6 +2,9 @@
 .next/
 .store/
 .turbo/
+.hive/
+.claude/
+.opencode/
 data/
 dist/
 node_modules/

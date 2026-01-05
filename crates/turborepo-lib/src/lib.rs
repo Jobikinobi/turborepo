@@ -19,21 +19,31 @@ mod child;
 mod cli;
 mod commands;
 mod config;
-mod daemon;
 pub mod devtools;
 mod diagnostics;
 mod engine;
 
 mod boundaries;
-mod gitignore;
-mod hash;
+// Re-export for backward compatibility. New code should import from
+// `turborepo_hash`.
+#[deprecated(
+    since = "2.4.0",
+    note = "Import from `turborepo_hash` crate directly instead"
+)]
+pub use turborepo_hash as hash;
 mod microfrontends;
 mod observability;
 mod opts;
 mod package_changes_watcher;
 mod panic_handler;
 mod query;
-mod rewrite_json;
+// Re-export for backward compatibility. New code should import from
+// `turborepo_json_rewrite`.
+#[deprecated(
+    since = "2.4.0",
+    note = "Import from `turborepo_json_rewrite` crate directly instead"
+)]
+pub use turborepo_json_rewrite as rewrite_json;
 mod run;
 mod shim;
 mod task_graph;
@@ -41,15 +51,13 @@ mod task_hash;
 mod tracing;
 mod turbo_json;
 
-pub use crate::{
-    child::spawn_child,
-    cli::Args,
-    daemon::{
-        DaemonClient, DaemonConnector, DaemonConnectorError, DaemonError, Paths as DaemonPaths,
-    },
-    panic_handler::panic_handler,
-    run::package_discovery::DaemonPackageDiscovery,
+pub use run::package_discovery::DaemonPackageDiscovery;
+// Re-export daemon types from the new crate location
+pub use turborepo_daemon::{
+    DaemonClient, DaemonConnector, DaemonConnectorError, DaemonError, Paths as DaemonPaths,
 };
+
+pub use crate::{child::spawn_child, cli::Args, panic_handler::panic_handler};
 
 pub fn get_version() -> &'static str {
     include_str!("../../../version.txt")

@@ -1,12 +1,5 @@
-use std::{
-    backtrace::Backtrace,
-    env,
-    ffi::OsString,
-    fmt::{self, Display},
-    io, mem, process,
-};
+use std::{backtrace::Backtrace, env, ffi::OsString, fmt, io, mem, process};
 
-use biome_deserialize_macros::Deserializable;
 use camino::{Utf8Path, Utf8PathBuf};
 use clap::{
     builder::NonEmptyStringValueParser, ArgAction, ArgGroup, CommandFactory, Parser, Subcommand,
@@ -14,7 +7,7 @@ use clap::{
 };
 use clap_complete::{generate, Shell};
 pub use error::Error;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use tracing::{debug, error, log::warn};
 use turbopath::AbsoluteSystemPathBuf;
 use turborepo_api_client::AnonAPIClient;
@@ -23,6 +16,7 @@ use turborepo_telemetry::{
     events::{command::CommandEventBuilder, generic::GenericEventBuilder, EventBuilder, EventType},
     init_telemetry, track_usage, TelemetryHandle,
 };
+use turborepo_types::{ContinueMode, DryRunMode, LogOrder, LogPrefix, UIMode};
 use turborepo_ui::{ColorConfig, GREY};
 
 use crate::{
@@ -35,7 +29,6 @@ use crate::{
     run::watch::WatchClient,
     shim::TurboState,
     tracing::TurboSubscriber,
-    turbo_json::UIMode,
 };
 
 mod error;
@@ -50,126 +43,20 @@ const DEFAULT_NUM_WORKERS: u32 = 10;
 const SUPPORTED_GRAPH_FILE_EXTENSIONS: [&str; 8] =
     ["svg", "png", "jpg", "pdf", "json", "html", "mermaid", "dot"];
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, ValueEnum, Deserializable, Serialize)]
-pub enum OutputLogsMode {
-    #[serde(rename = "full")]
-    #[default]
-    Full,
-    #[serde(rename = "none")]
-    None,
-    #[serde(rename = "hash-only")]
-    HashOnly,
-    #[serde(rename = "new-only")]
-    NewOnly,
-    #[serde(rename = "errors-only")]
-    ErrorsOnly,
-}
-
-impl Display for OutputLogsMode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
-            OutputLogsMode::Full => "full",
-            OutputLogsMode::None => "none",
-            OutputLogsMode::HashOnly => "hash-only",
-            OutputLogsMode::NewOnly => "new-only",
-            OutputLogsMode::ErrorsOnly => "errors-only",
-        })
-    }
-}
-
-impl From<OutputLogsMode> for turborepo_ui::tui::event::OutputLogs {
-    fn from(value: OutputLogsMode) -> Self {
-        match value {
-            OutputLogsMode::Full => turborepo_ui::tui::event::OutputLogs::Full,
-            OutputLogsMode::None => turborepo_ui::tui::event::OutputLogs::None,
-            OutputLogsMode::HashOnly => turborepo_ui::tui::event::OutputLogs::HashOnly,
-            OutputLogsMode::NewOnly => turborepo_ui::tui::event::OutputLogs::NewOnly,
-            OutputLogsMode::ErrorsOnly => turborepo_ui::tui::event::OutputLogs::ErrorsOnly,
-        }
-    }
-}
-
-#[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, ValueEnum, Deserialize, Eq)]
-pub enum LogOrder {
-    #[serde(rename = "auto")]
-    #[default]
-    Auto,
-    #[serde(rename = "stream")]
-    Stream,
-    #[serde(rename = "grouped")]
-    Grouped,
-}
-
-impl Display for LogOrder {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
-            LogOrder::Auto => "auto",
-            LogOrder::Stream => "stream",
-            LogOrder::Grouped => "grouped",
-        })
-    }
-}
-
-impl LogOrder {
-    pub fn compatible_with_tui(&self) -> bool {
-        // If the user requested a specific order to the logs, then this isn't
-        // compatible with the TUI and means we cannot use it.
-        matches!(self, Self::Auto)
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, ValueEnum, Serialize)]
-pub enum DryRunMode {
-    Text,
-    Json,
-}
-
-impl Display for DryRunMode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
-            DryRunMode::Text => "text",
-            DryRunMode::Json => "json",
-        })
-    }
-}
-
-#[derive(
-    Copy, Clone, Debug, Default, PartialEq, Serialize, ValueEnum, Deserialize, Eq, Deserializable,
+// Re-export OutputLogsMode from turborepo-types for backward compatibility.
+// New code should import directly from `turborepo_types::OutputLogsMode`.
+// Re-export EnvMode from turborepo-types for backward compatibility.
+// New code should import directly from `turborepo_types::EnvMode`.
+#[deprecated(
+    since = "2.4.0",
+    note = "Import `EnvMode` directly from `turborepo_types` instead"
 )]
-#[serde(rename_all = "lowercase")]
-pub enum EnvMode {
-    Loose,
-    #[default]
-    Strict,
-}
-
-impl fmt::Display for EnvMode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
-            EnvMode::Loose => "loose",
-            EnvMode::Strict => "strict",
-        })
-    }
-}
-
-#[derive(Copy, Clone, Debug, Default, PartialEq, ValueEnum, Serialize)]
-#[serde(rename_all = "lowercase")]
-pub enum ContinueMode {
-    #[default]
-    Never,
-    DependenciesSuccessful,
-    Always,
-}
-
-impl fmt::Display for ContinueMode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
-            ContinueMode::Never => "never",
-            ContinueMode::DependenciesSuccessful => "dependencies-successful",
-            ContinueMode::Always => "always",
-        })
-    }
-}
+pub use turborepo_types::EnvMode;
+#[deprecated(
+    since = "2.4.0",
+    note = "Import `OutputLogsMode` directly from `turborepo_types` instead"
+)]
+pub use turborepo_types::OutputLogsMode;
 
 /// The parsed arguments from the command line. In general we should avoid using
 /// or mutating this directly, and instead use the fully canonicalized `Opts`
@@ -351,6 +238,87 @@ pub enum LinkTarget {
     Spaces,
 }
 
+/// Returns formatted RunArgs options derived from clap's command definition.
+/// These options aren't included in the usage line by clap because they're all
+/// optional.
+fn get_run_args_options() -> Vec<String> {
+    RunArgs::command()
+        .get_arguments()
+        .filter(|arg| arg.get_long().is_some())
+        .map(|arg| {
+            let long = arg.get_long().unwrap();
+            let value_names: Vec<_> = arg.get_value_names().unwrap_or_default().to_vec();
+
+            if value_names.is_empty() {
+                // Boolean flag
+                format!("--{}", long)
+            } else {
+                // Check if value is optional via num_args (0..=1 means optional)
+                let is_optional = arg
+                    .get_num_args()
+                    .is_some_and(|range| range.min_values() == 0);
+
+                let value_str = value_names
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join("> <");
+
+                if is_optional {
+                    format!("--{} [<{}>]", long, value_str)
+                } else {
+                    format!("--{} <{}>", long, value_str)
+                }
+            }
+        })
+        .collect()
+}
+
+/// Formats clap error messages to improve readability of pipe-separated options
+fn format_error_message(mut err_str: String) -> String {
+    // Replace pipe separators in usage line with newlines for better readability
+    // The usage line typically looks like: "Usage: turbo <--opt1|--opt2|--opt3>"
+    if let Some(usage_start) = err_str.find("Usage: ") {
+        if let Some(usage_end) = err_str[usage_start..].find('\n') {
+            let usage_end = usage_start + usage_end;
+            let usage_line = &err_str[usage_start..usage_end];
+
+            // Check if this usage line contains the pipe-separated options pattern
+            if usage_line.contains('<') && usage_line.contains('>') && usage_line.contains('|') {
+                // Find the angle bracket enclosed section
+                if let Some(bracket_start) = usage_line.find('<') {
+                    if let Some(bracket_end) = usage_line.rfind('>') {
+                        let prefix = &usage_line[..bracket_start];
+                        let options_str = &usage_line[bracket_start + 1..bracket_end];
+
+                        // Split the options by pipe and format them as a list
+                        let mut formatted_options: Vec<String> = options_str
+                            .split('|')
+                            .map(|opt| format!("    {}", opt))
+                            .collect();
+
+                        // Add RunArgs options that clap doesn't include
+                        for opt in get_run_args_options() {
+                            formatted_options.push(format!("    {}", opt));
+                        }
+
+                        // Build the new usage string
+                        let new_usage = format!(
+                            "{} [OPTIONS] [TASKS]... [-- <PASS_THROUGH_ARGS>...]\n\nOptions:\n{}",
+                            prefix.trim_end(),
+                            formatted_options.join("\n")
+                        );
+
+                        // Replace the old usage line with the new formatted one
+                        err_str.replace_range(usage_start..usage_end, &new_usage);
+                    }
+                }
+            }
+        }
+    }
+    err_str
+}
+
 impl Args {
     pub fn new(os_args: Vec<OsString>) -> Self {
         let clap_args = match Args::parse(os_args) {
@@ -366,7 +334,7 @@ impl Args {
                 process::exit(1);
             }
             Err(e) if e.use_stderr() => {
-                let err_str = e.to_string();
+                let err_str = format_error_message(e.to_string());
                 // A cleaner solution would be to implement our own clap::error::ErrorFormatter
                 // but that would require copying the default formatter just to remove this
                 // line: https://docs.rs/clap/latest/src/clap/error/format.rs.html#100
@@ -1168,27 +1136,6 @@ impl RunArgs {
     }
 }
 
-#[derive(ValueEnum, Clone, Copy, Debug, Default, PartialEq, Serialize)]
-pub enum LogPrefix {
-    #[serde(rename = "auto")]
-    #[default]
-    Auto,
-    #[serde(rename = "none")]
-    None,
-    #[serde(rename = "task")]
-    Task,
-}
-
-impl Display for LogPrefix {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            LogPrefix::Auto => write!(f, "auto"),
-            LogPrefix::None => write!(f, "none"),
-            LogPrefix::Task => write!(f, "task"),
-        }
-    }
-}
-
 fn initialize_telemetry_client(
     color_config: ColorConfig,
     version: &str,
@@ -1357,7 +1304,7 @@ pub async fn run(
     let telemetry_handle = initialize_telemetry_client(color_config, version);
 
     if should_print_version() {
-        eprintln!("{}\n", GREY.apply_to(format!("turbo {}", get_version())));
+        eprintln!("{}", GREY.apply_to(format!("• turbo {}", get_version())));
     }
 
     let mut command = get_command(&mut cli_args)?;
@@ -1812,7 +1759,9 @@ mod test {
         }
     }
 
-    use crate::cli::{Args, Command, DryRunMode, EnvMode, LogOrder, LogPrefix, OutputLogsMode};
+    use turborepo_types::{DryRunMode, EnvMode, LogOrder, OutputLogsMode};
+
+    use crate::cli::{Args, Command, LogPrefix};
 
     #[test_case::test_case(
         &["turbo", "run", "build"],
