@@ -33,14 +33,9 @@
     },
 
     // docs lint task runs fumadocs-mdx to generate types before oxlint
-    "turborepo-docs#lint": {},
+    "docs#lint": {},
     "//#quality": {
-      "dependsOn": [
-        "//#lint",
-        "//#format",
-        "//#check:toml",
-        "turborepo-docs#lint"
-      ]
+      "dependsOn": ["//#lint", "//#format", "//#check:toml", "docs#lint"]
     },
     "//#lint": {},
     "//#lint:fix": {},
@@ -54,6 +49,7 @@
     "check-types": {
       "dependsOn": ["^build"]
     },
+    "check-openapi": {},
     "//#build:ts": {
       "outputs": ["packages/**/dist"]
     },
@@ -61,7 +57,12 @@
       "outputs": ["dist/**/*"]
     },
     "build": {
-      "outputs": ["dist/**/*", ".next/**/*"],
+      "outputs": [
+        "dist/**/*",
+        ".next/**/*",
+        "!.next/cache/**/*",
+        "!.next/dev/**/*"
+      ],
       "dependsOn": ["^build"]
     },
     "package-checks": {
