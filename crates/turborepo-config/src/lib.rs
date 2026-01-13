@@ -155,8 +155,9 @@ pub enum Error {
     TurboJsonError(#[from] turborepo_turbo_json::Error),
 
     /// ============================================================
-    /// Experimental observability errors (enabled with
-    /// "futureFlags.experimentalObservability" in turbo.json)
+    /// Experimental observability errors
+    /// (Note: CLI flags and env vars work independently;
+    /// "futureFlags.experimentalObservability" only gates turbo.json config)
     /// ============================================================
     #[error("Invalid experimentalOtel configuration: {message}")]
     InvalidExperimentalOtelConfig { message: String },
