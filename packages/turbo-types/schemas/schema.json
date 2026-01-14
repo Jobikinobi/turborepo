@@ -253,7 +253,14 @@
     },
     "FutureFlags": {
       "description": "Opt into breaking changes prior to major releases, experimental features, and beta features.\n\nNote: Currently all previous future flags (turboExtendsKeyword, nonRootExtends) have been graduated and are now enabled by default.",
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "experimentalObservability": {
+          "description": "Enable experimental OpenTelemetry exporter support.\n\nWhen enabled, Turborepo will honor the `experimentalObservability` configuration block (if present) to send run summaries to an observability backend.",
+          "default": false,
+          "type": "boolean"
+        }
+      }
     },
     "Map_of_TagRules": {
       "type": "object",

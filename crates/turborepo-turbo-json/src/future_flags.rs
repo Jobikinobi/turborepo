@@ -40,6 +40,8 @@ pub struct FutureFlags {
     /// When enabled, Turborepo will honor the `experimentalObservability`
     /// configuration block (if present) to send run summaries to an
     /// observability backend.
+    #[serde(default)]
+    #[schemars(default)]
     pub experimental_observability: bool,
 }
 
