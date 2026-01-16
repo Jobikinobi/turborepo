@@ -64,7 +64,7 @@ export type RawTurboJson = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#tasks
    */
-  tasks:  | null;
+  tasks: null;
   /**
    * Configuration options when interfacing with the remote cache.
    *
