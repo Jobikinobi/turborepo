@@ -15,7 +15,7 @@ export type Pipeline = {
    * This field is for documentation purposes only and does not affect
    * task execution or caching behavior.
    */
-  description: string | null,
+  description: string | null;
   /**
    * Whether or not to cache the outputs of the task.
    *
@@ -24,7 +24,7 @@ export type Pipeline = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#cache
    */
-  cache: boolean | null,
+  cache: boolean | null;
   /**
    * The list of tasks that this task depends on.
    *
@@ -35,7 +35,7 @@ export type Pipeline = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#dependson
    */
-  dependsOn: Array<string> | null,
+  dependsOn: Array<string> | null;
   /**
    * A list of environment variables that this task depends on.
    *
@@ -45,7 +45,7 @@ export type Pipeline = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#env
    */
-  env: Array<string> | null,
+  env: Array<string> | null;
   /**
    * The set of glob patterns to consider as inputs to this task.
    *
@@ -56,7 +56,7 @@ export type Pipeline = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#inputs
    */
-  inputs: Array<string> | null,
+  inputs: Array<string> | null;
   /**
    * An allowlist of environment variables that should be made available
    * in this task's environment, but should not contribute to the task's
@@ -64,7 +64,7 @@ export type Pipeline = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#passthroughenv
    */
-  passThroughEnv: Array<string> | null,
+  passThroughEnv: Array<string> | null;
   /**
    * Indicates whether the task exits or not.
    *
@@ -73,7 +73,7 @@ export type Pipeline = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#persistent
    */
-  persistent: boolean | null,
+  persistent: boolean | null;
   /**
    * Label a persistent task as interruptible to allow it to be restarted
    * by `turbo watch`.
@@ -85,7 +85,7 @@ export type Pipeline = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#interruptible
    */
-  interruptible: boolean | null,
+  interruptible: boolean | null;
   /**
    * The set of glob patterns indicating a task's cacheable filesystem
    * outputs.
@@ -97,13 +97,13 @@ export type Pipeline = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#outputs
    */
-  outputs: Array<string> | null,
+  outputs: Array<string> | null;
   /**
    * Output mode for the task.
    *
    * Documentation: https://turborepo.dev/docs/reference/run#--output-logs-option
    */
-  outputLogs: OutputLogs | null,
+  outputLogs: OutputLogs | null;
   /**
    * Mark a task as interactive allowing it to receive input from stdin.
    *
@@ -112,7 +112,7 @@ export type Pipeline = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#interactive
    */
-  interactive: boolean | null,
+  interactive: boolean | null;
   /**
    * A list of tasks that will run alongside this task.
    *
@@ -121,5 +121,5 @@ export type Pipeline = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#with
    */
-  with: Array<string> | null,
+  with: Array<string> | null;
 };

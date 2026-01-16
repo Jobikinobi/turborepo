@@ -12,27 +12,27 @@ export type RemoteCache = {
    *
    * Documentation: https://turborepo.dev/docs/core-concepts/remote-caching#self-hosting
    */
-  apiUrl: string | null,
+  apiUrl: string | null;
   /**
    * Set endpoint for requesting tokens during `turbo login`.
    *
    * Documentation: https://turborepo.dev/docs/core-concepts/remote-caching#self-hosting
    */
-  loginUrl: string | null,
+  loginUrl: string | null;
   /**
    * The slug of the Remote Cache team.
    *
    * Value will be passed as `slug` in the querystring for all Remote
    * Cache HTTP calls.
    */
-  teamSlug: string | null,
+  teamSlug: string | null;
   /**
    * The ID of the Remote Cache team.
    *
    * Value will be passed as `teamId` in the querystring for all Remote
    * Cache HTTP calls. Must start with `team_` or it will not be used.
    */
-  teamId: string | null,
+  teamId: string | null;
   /**
    * Indicates if signature verification is enabled for requests to the
    * remote cache.
@@ -42,21 +42,21 @@ export type RemoteCache = {
    * Turborepo will reject any downloaded artifacts that have an invalid
    * signature or are missing a signature.
    */
-  signature: boolean | null,
+  signature: boolean | null;
   /**
    * When enabled, any HTTP request will be preceded by an OPTIONS request
    * to determine if the request is supported by the endpoint.
    *
    * Documentation: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#preflighted_requests
    */
-  preflight: boolean | null,
+  preflight: boolean | null;
   /**
    * Sets a timeout for remote cache operations.
    *
    * Value is given in seconds and only whole values are accepted.
    * If `0` is passed, then there is no timeout for any cache operations.
    */
-  timeout: number | null,
+  timeout: number | null;
   /**
    * Indicates if the remote cache is enabled.
    *
@@ -67,12 +67,12 @@ export type RemoteCache = {
    *
    * Documentation: https://turborepo.dev/docs/core-concepts/remote-caching
    */
-  enabled: boolean | null,
+  enabled: boolean | null;
   /**
    * Sets a timeout for remote cache uploads.
    *
    * Value is given in seconds and only whole values are accepted.
    * If `0` is passed, then there is no timeout for any remote cache uploads.
    */
-  uploadTimeout: number | null,
+  uploadTimeout: number | null;
 };

@@ -14,7 +14,7 @@ export type RawTurboJson = {
   /**
    * JSON Schema URL for validation.
    */
-  $schema: string | null,
+  $schema: string | null;
   /**
    * This key is only available in Workspace Configs and cannot be used in
    * your root turbo.json.
@@ -23,7 +23,7 @@ export type RawTurboJson = {
    * keys provided in your Workspace Configs. Currently, only the `["//"]`
    * value is allowed.
    */
-  extends: Array<string> | null,
+  extends: Array<string> | null;
   /**
    * A list of globs to include in the set of implicit global hash
    * dependencies.
@@ -39,7 +39,7 @@ export type RawTurboJson = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#globaldependencies
    */
-  globalDependencies: Array<string> | null,
+  globalDependencies: Array<string> | null;
   /**
    * A list of environment variables for implicit global hash dependencies.
    *
@@ -47,7 +47,7 @@ export type RawTurboJson = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#globalenv
    */
-  globalEnv: Array<string> | null,
+  globalEnv: Array<string> | null;
   /**
    * An allowlist of environment variables that should be made to all tasks,
    * but should not contribute to the task's cache key, e.g.
@@ -55,7 +55,7 @@ export type RawTurboJson = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#globalpassthroughenv
    */
-  globalPassThroughEnv: Array<string> | null,
+  globalPassThroughEnv: Array<string> | null;
   /**
    * An object representing the task dependency graph of your project.
    *
@@ -64,19 +64,19 @@ export type RawTurboJson = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#tasks
    */
-  tasks:  | null,
+  tasks:  | null;
   /**
    * Configuration options when interfacing with the remote cache.
    *
    * Documentation: https://turborepo.dev/docs/core-concepts/remote-caching
    */
-  remoteCache: RemoteCache | null,
+  remoteCache: RemoteCache | null;
   /**
    * Enable use of the UI for `turbo`.
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#ui
    */
-  ui: UI | null,
+  ui: UI | null;
   /**
    * Disable check for `packageManager` in root `package.json`.
    *
@@ -84,7 +84,7 @@ export type RawTurboJson = {
    * configuration to infer the correct package manager. Some turbo features
    * are disabled if this is set to true.
    */
-  dangerouslyDisablePackageManagerCheck: boolean | null,
+  dangerouslyDisablePackageManagerCheck: boolean | null;
   /**
    * Turborepo runs a background process to pre-calculate some expensive
    * operations. This standalone process (daemon) is a performance
@@ -92,40 +92,40 @@ export type RawTurboJson = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#daemon
    */
-  daemon: boolean | null,
+  daemon: boolean | null;
   /**
    * Turborepo's Environment Modes allow you to control which environment
    * variables are available to a task at runtime.
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#envmode
    */
-  envMode: EnvMode | null,
+  envMode: EnvMode | null;
   /**
    * Specify the filesystem cache directory.
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#cachedir
    */
-  cacheDir: string | null,
+  cacheDir: string | null;
   /**
    * When set to `true`, disables the update notification that appears when
    * a new version of `turbo` is available.
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#noupdatenotifier
    */
-  noUpdateNotifier: boolean | null,
+  noUpdateNotifier: boolean | null;
   /**
    * Used to tag a package for boundaries rules.
    *
    * Boundaries rules can restrict which packages a tag group can import
    * or be imported by.
    */
-  tags: Array<string> | null,
+  tags: Array<string> | null;
   /**
    * Configuration for `turbo boundaries`.
    *
    * Allows users to restrict a package's dependencies and dependents.
    */
-  boundaries: BoundariesConfig | null,
+  boundaries: BoundariesConfig | null;
   /**
    * Set/limit the maximum concurrency for task execution.
    *
@@ -135,10 +135,10 @@ export type RawTurboJson = {
    *
    * Documentation: https://turborepo.dev/docs/reference/configuration#concurrency
    */
-  concurrency: string | null,
+  concurrency: string | null;
   /**
    * Opt into breaking changes prior to major releases, experimental
    * features, and beta features.
    */
-  futureFlags: FutureFlags | null,
+  futureFlags: FutureFlags | null;
 };
