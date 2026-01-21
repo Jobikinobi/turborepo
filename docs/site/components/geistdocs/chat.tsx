@@ -31,6 +31,7 @@ import {
   PromptInputSubmit,
   PromptInputTextarea
 } from "@/components/ai-elements/prompt-input";
+import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
@@ -129,7 +130,7 @@ const ChatInner = ({ basePath, suggestions }: ChatProps) => {
   const { initialMessages, isLoading, saveMessages, clearMessages } =
     useChatPersistence();
 
-  const { messages, sendMessage, status, setMessages } = useChat({
+  const { messages, sendMessage, status, setMessages, stop } = useChat({
     transport: new DefaultChatTransport({
       api: basePath ? `${basePath}/api/chat` : "/api/chat"
     }),
@@ -166,13 +167,14 @@ const ChatInner = ({ basePath, suggestions }: ChatProps) => {
     }
   }, [messages, saveMessages, isInitialized]);
 
-  const handleSuggestionClick = async (suggestion: string) => {
-    await sendMessage({ text: suggestion });
+  const handleSuggestionClick = (suggestion: string) => {
+    stop();
     setLocalPrompt("");
     setPrompt("");
+    void sendMessage({ text: suggestion });
   };
 
-  const handleSubmit: PromptInputProps["onSubmit"] = async (message, event) => {
+  const handleSubmit: PromptInputProps["onSubmit"] = (message, event) => {
     event.preventDefault();
 
     const { text } = message;
@@ -181,13 +183,16 @@ const ChatInner = ({ basePath, suggestions }: ChatProps) => {
       return;
     }
 
-    await sendMessage({ text });
+    stop();
     setLocalPrompt("");
     setPrompt("");
+    void sendMessage({ text });
   };
 
   const handleClearChat = async () => {
     try {
+      // Cancel any active stream first
+      stop();
       await clearMessages();
       setMessages([]);
       toast.success("Chat history cleared");
@@ -201,14 +206,14 @@ const ChatInner = ({ basePath, suggestions }: ChatProps) => {
   // Show loading state while initial messages are being loaded
   if (isLoading) {
     return (
-      <div className="flex size-full w-full flex-col items-center justify-center overflow-hidden whitespace-nowrap rounded-xl xl:max-w-md xl:border xl:bg-background">
+      <div className="flex size-full w-full flex-col items-center justify-center overflow-hidden rounded-xl xl:max-w-md xl:border xl:bg-background">
         <Spinner />
       </div>
     );
   }
 
   return (
-    <div className="flex size-full w-full flex-col overflow-hidden whitespace-nowrap bg-background">
+    <div className="flex size-full w-full flex-col overflow-hidden bg-background">
       <div className="flex items-center justify-between px-4 py-2.5">
         <h2 className="font-semibold text-sm">Chat</h2>
         <div className="flex items-center gap-3">
@@ -245,58 +250,91 @@ const ChatInner = ({ basePath, suggestions }: ChatProps) => {
 
       <Conversation>
         <ConversationContent>
-          {messages.map((message, index) => {
-            const isLastMessage = index === messages.length - 1;
-            const isAssistantMessage = message.role === "assistant";
-            const isStreaming =
-              isLastMessage &&
-              isAssistantMessage &&
-              (status === "streaming" || status === "submitted");
+          {messages
+            .filter((message, index, arr) => {
+              const isLastMessage = index === arr.length - 1;
+              const isStreaming =
+                isLastMessage &&
+                message.role === "assistant" &&
+                (status === "streaming" || status === "submitted");
+              const hasText = message.parts.some(
+                (part) => part.type === "text" && part.text
+              );
+              // Include message if it has text OR if it's actively streaming
+              return hasText || isStreaming;
+            })
+            .map((message, index, filteredMessages) => {
+              const isLastMessage = index === filteredMessages.length - 1;
+              const isAssistantMessage = message.role === "assistant";
+              const isStreaming =
+                isLastMessage &&
+                isAssistantMessage &&
+                (status === "streaming" || status === "submitted");
+              const hasTextContent = message.parts.some(
+                (part) => part.type === "text"
+              );
 
-            return (
-              <Message
-                className="max-w-[90%]"
-                from={message.role}
-                key={message.id}
-              >
-                <MessageMetadata
-                  inProgress={status === "submitted"}
-                  isStreaming={isStreaming}
-                  parts={message.parts as MyUIMessage["parts"]}
-                />
-                {message.parts
-                  .filter((part) => part.type === "text")
-                  .map((part, partIndex) => (
-                    <MessageContent
-                      key={`${message.id}-${part.type}-${partIndex}`}
-                    >
-                      <MessageResponse
-                        className="text-wrap"
-                        rehypePlugins={[
-                          ...Object.values(plugins),
-                          [
-                            harden,
-                            {
-                              defaultOrigin:
-                                process.env
-                                  .NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL,
-                              allowedLinkPrefixes: ["*"]
-                            }
-                          ]
-                        ]}
+              return (
+                <Message from={message.role} key={message.id}>
+                  {isAssistantMessage && (
+                    <MessageMetadata
+                      messageId={message.id}
+                      inProgress={status === "submitted"}
+                      isStreaming={isStreaming}
+                      parts={message.parts as MyUIMessage["parts"]}
+                    />
+                  )}
+                  {isStreaming && !hasTextContent && (
+                    <div className="flex items-center gap-2">
+                      <Spinner />
+                      <Shimmer>
+                        {message.parts.some((p) => p.type === "source-url")
+                          ? "Generating response..."
+                          : "Looking up sources..."}
+                      </Shimmer>
+                    </div>
+                  )}
+                  {message.parts
+                    .filter((part) => part.type === "text")
+                    .map((part, partIndex) => (
+                      <MessageContent
+                        key={`${message.id}-${part.type}-${partIndex}`}
                       >
-                        {part.text}
-                      </MessageResponse>
-                    </MessageContent>
-                  ))}
+                        {isAssistantMessage ? (
+                          <MessageResponse
+                            className="text-wrap"
+                            rehypePlugins={[
+                              ...Object.values(plugins),
+                              [
+                                harden,
+                                {
+                                  defaultOrigin:
+                                    process.env
+                                      .NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL,
+                                  allowedLinkPrefixes: ["*"]
+                                }
+                              ]
+                            ]}
+                          >
+                            {part.text}
+                          </MessageResponse>
+                        ) : (
+                          part.text
+                        )}
+                      </MessageContent>
+                    ))}
+                </Message>
+              );
+            })}
+          {(status === "submitted" || status === "streaming") &&
+            !messages.some((m) => m.role === "assistant") && (
+              <Message from="assistant">
+                <div className="flex items-center gap-2">
+                  <Spinner />
+                  <Shimmer>Looking up sources...</Shimmer>
+                </div>
               </Message>
-            );
-          })}
-          {status === "submitted" && (
-            <div className="size-12 text-muted-foreground text-sm">
-              <Spinner />
-            </div>
-          )}
+            )}
         </ConversationContent>
         <ConversationScrollButton className="border-none bg-foreground text-background hover:bg-foreground/80 hover:text-background" />
       </Conversation>
@@ -342,7 +380,7 @@ const ChatInner = ({ basePath, suggestions }: ChatProps) => {
               <p className="text-muted-foreground text-xs">
                 {localPrompt.length} / 1000
               </p>
-              <PromptInputSubmit status={status} />
+              <PromptInputSubmit onStop={stop} status={status} />
             </PromptInputFooter>
           </PromptInput>
         </PromptInputProvider>
@@ -389,12 +427,13 @@ export const Chat = ({ basePath, suggestions }: ChatProps) => {
         <span>Ask AI</span>
       </Button>
 
-      <Portal.Root className="hidden md:block">
+      <Portal.Root>
         <div
           className={cn(
             "fixed z-50 flex flex-col gap-4 bg-background transition-all",
             "inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm",
-            "translate-x-full data-[state=open]:translate-x-0"
+            "translate-x-full data-[state=open]:translate-x-0",
+            "hidden md:flex"
           )}
           data-state={isOpen ? "open" : "closed"}
         >
