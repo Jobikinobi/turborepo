@@ -83,9 +83,12 @@ pub struct NoPackageManager;
 
 impl Display for NoPackageManager {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "We did not find a package manager specified in your root package.json. \
+        write!(
+            f,
+            "We did not find a package manager specified in your root package.json. \
         Please set the \"packageManager\" property in your root package.json (https://nodejs.org/api/packages.html#packagemanager) \
-        or run `npx @turbo/codemod add-package-manager` in the root of your monorepo.")
+        or run `npx @turbo/codemod add-package-manager` in the root of your monorepo."
+        )
     }
 }
 
